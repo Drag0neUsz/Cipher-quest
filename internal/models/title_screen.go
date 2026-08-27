@@ -5,19 +5,6 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	lipgloss "charm.land/lipgloss/v2"
-)
-
-var (
-	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00FF66")).
-			Bold(true)
-
-	selectedItemStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#000000")).
-				Background(lipgloss.Color("#00FF66")).
-				Bold(true).
-				Padding(0, 1)
 )
 
 type TitleScreenModel struct {
@@ -79,7 +66,7 @@ func (m TitleScreenModel) Update(msg tea.Msg) (TitleScreenModel, tea.Cmd) {
 	return m, nil
 }
 
-func (m TitleScreenModel) View() tea.View {
+func (m TitleScreenModel) View() string {
 	b := strings.Builder{}
 	// The header
 
@@ -99,16 +86,19 @@ func (m TitleScreenModel) View() tea.View {
 		// Is the cursor pointing at this choice?
 		cursor := "  " // no cursor
 		if m.cursor == i {
-			cursor = "->" // cursor!
+			b.WriteString(selectedItemStyle.Render(fmt.Sprintf("%s %s", "->", choice)))
+			b.WriteString("\n")
+		} else {
+			b.WriteString(fmt.Sprintf("%s %s\n", cursor, choice))
 		}
 
 		// Render the row
-		b.WriteString(fmt.Sprintf("%s %s\n", cursor, choice))
+
 	}
 
 	// The footer
 	b.WriteString("\nq to go back.    ctrl+c to quit.\n")
 
 	// Send the UI for rendering
-	return tea.NewView(b.String())
+	return b.String()
 }

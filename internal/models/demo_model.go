@@ -72,7 +72,7 @@ func (m DemoModel) Update(msg tea.Msg) (DemoModel, tea.Cmd) {
 	return m, nil
 }
 
-func (m DemoModel) View() tea.View {
+func (m DemoModel) View() string {
 	// The header
 	s := "What should we buy at the market?\n\n"
 
@@ -99,5 +99,5 @@ func (m DemoModel) View() tea.View {
 	s += "\nPress q to quit.\n"
 
 	// Send the UI for rendering
-	return tea.NewView(s)
+	return s
 }

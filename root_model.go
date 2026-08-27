@@ -57,9 +57,9 @@ func (m RootModel) View() tea.View {
 	var view tea.View
 	switch m.state {
 	case models.SessionStateTitleScreen:
-		view = m.titleScreen.View()
+		view = tea.NewView(m.titleScreen.View())
 	case models.SessionStateDemo:
-		view = m.demo.View()
+		view = tea.NewView(m.demo.View())
 	}
 	view.AltScreen = true
 	return view
