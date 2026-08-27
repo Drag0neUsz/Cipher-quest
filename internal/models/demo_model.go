@@ -24,6 +24,14 @@ func InitialDemoModel() DemoModel {
 	}
 }
 
+func (m DemoModel) GetPreviousState() SessionState {
+	return SessionStateTitleScreen
+}
+
+func (m DemoModel) GetNextState() SessionState {
+	return SessionStateDemo
+}
+
 func (m DemoModel) Update(msg tea.Msg) (DemoModel, tea.Cmd) {
 	switch msg.(type) {
 	case tea.KeyMsg:
