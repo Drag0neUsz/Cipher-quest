@@ -95,9 +95,6 @@ func (m DemoModel) View() string {
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
 
-	// The footer
-	s += "\nPress q to quit.\n"
-
 	// Send the UI for rendering
 	return s
 }
