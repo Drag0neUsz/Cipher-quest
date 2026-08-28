@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strings"
-
 	tea "charm.land/bubbletea/v2"
 	models "github.com/Drag0neUsz/Cipher-quest/internal/models"
 )
@@ -14,6 +12,7 @@ type RootModel struct {
 	instructionsScreen  models.InstructionsScreenModel
 	demo                models.DemoModel
 	chapterSelectScreen models.ChapterSelectScreenModel
+	puzzleScreen        models.PuzzleScreenModel
 }
 
 func (m RootModel) Init() tea.Cmd {
@@ -27,65 +26,86 @@ func initialRootModel() RootModel {
 		instructionsScreen:  models.InitialInstructionsScreenModel(),
 		demo:                models.InitialDemoModel(),
 		chapterSelectScreen: models.InitialChapterSelectScreenModel(),
+		aboutScreen:         models.InitialAboutScreenModel(),
 	}
 }
 
 func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	switch msg.(type) {
-	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
-		switch msg.String() {
-		case "ctrl+c":
+
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		if keyMsg.String() == "ctrl+c" {
 			return m, tea.Quit
-		case "q":
-			m.state = m.titleScreen.GetPreviousState()
-			return m, nil
-
-		default:
-			switch m.state {
-			case models.SessionStateTitleScreen:
-				m.titleScreen, cmd = m.titleScreen.Update(msg)
-				m.state = m.titleScreen.GetNextState()
-			case models.SessionStateAboutScreen:
-				m.aboutScreen, cmd = m.aboutScreen.Update(msg)
-				m.state = m.aboutScreen.GetNextState()
-			case models.SessionStateInstructionsScreen:
-				m.instructionsScreen, cmd = m.instructionsScreen.Update(msg)
-				m.state = m.instructionsScreen.GetNextState()
-			case models.SessionStateDemo:
-				m.demo, cmd = m.demo.Update(msg)
-				m.state = m.demo.GetNextState()
-			case models.SessionStateChapterSelectScreen:
-				m.chapterSelectScreen, cmd = m.chapterSelectScreen.Update(msg)
-				m.state = m.chapterSelectScreen.GetNextState()
-			}
 		}
-
 	}
 
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
+	switch m.state {
+	case models.SessionStateTitleScreen:
+		m.titleScreen, cmd = m.titleScreen.Update(msg)
+		if next := m.titleScreen.GetNextState(); next != m.state {
+			m.state = next
+		}
+
+	case models.SessionStateAboutScreen:
+		m.aboutScreen, cmd = m.aboutScreen.Update(msg)
+		if next := m.aboutScreen.GetNextState(); next != m.state {
+			m.state = next
+		}
+
+	case models.SessionStateInstructionsScreen:
+		m.instructionsScreen, cmd = m.instructionsScreen.Update(msg)
+		if next := m.instructionsScreen.GetNextState(); next != m.state {
+			m.state = next
+		}
+
+	case models.SessionStateDemo:
+		m.demo, cmd = m.demo.Update(msg)
+		if next := m.demo.GetNextState(); next != m.state {
+			m.state = next
+		}
+
+	case models.SessionStateChapterSelectScreen:
+		m.chapterSelectScreen, cmd = m.chapterSelectScreen.Update(msg)
+
+		// Obsługa wyboru konkretnego poziomu
+		if next := m.chapterSelectScreen.GetNextState(); next != m.state {
+			if next == models.SessionStatePuzzleScreen {
+				// Dynamicznie ładujemy wybrany puzzle do ekranu gry
+				puzzle := m.chapterSelectScreen.GetSelectedPuzzle()
+				m.puzzleScreen = models.InitialPuzzleScreenModel(puzzle)
+				m.state = next
+				return m, m.puzzleScreen.Init()
+			}
+			m.state = next
+		}
+
+	case models.SessionStatePuzzleScreen:
+		m.puzzleScreen, cmd = m.puzzleScreen.Update(msg)
+		if next := m.puzzleScreen.GetNextState(); next != m.state {
+			m.state = next
+		}
+	}
+
 	return m, cmd
 }
 
 func (m RootModel) View() tea.View {
-	view := strings.Builder{}
+	var view tea.View
 	switch m.state {
 	case models.SessionStateTitleScreen:
-		view.WriteString(m.titleScreen.View())
+		view = m.titleScreen.View()
 	case models.SessionStateAboutScreen:
-		view.WriteString(m.aboutScreen.View())
+		view = m.aboutScreen.View()
 	case models.SessionStateInstructionsScreen:
-		view.WriteString(m.instructionsScreen.View())
+		view = m.instructionsScreen.View()
 	case models.SessionStateDemo:
-		view.WriteString(m.demo.View())
+		view = m.demo.View()
 	case models.SessionStateChapterSelectScreen:
-		view.WriteString(m.chapterSelectScreen.View())
+		view = m.chapterSelectScreen.View()
+	case models.SessionStatePuzzleScreen:
+		view = m.puzzleScreen.View()
 	}
-	view.WriteString(models.Footer)
-	teaView := tea.NewView(view.String())
-	teaView.AltScreen = true
-	return teaView
+	view.AltScreen = true
+	return view
 
 }

@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/Drag0neUsz/Cipher-quest/internal"
+	ciphers "github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 func TestCaesarCipherEncrypt(t *testing.T) {
@@ -22,7 +22,7 @@ func TestCaesarCipherEncrypt(t *testing.T) {
 		{27, "hello", "ifmmp"},
 	}
 	for _, test := range tests {
-		cipher := &internal.CaesarCipher{Shift: test.shift}
+		cipher := &ciphers.CaesarCipher{Shift: test.shift}
 		if cipher.Encrypt(test.plaintext) != test.ciphertext {
 			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.ciphertext, cipher.Encrypt(test.plaintext))
 		}
@@ -47,7 +47,7 @@ func TestCaesarCipherDecrypt(t *testing.T) {
 		{27, "ifmmp", "hello"},
 	}
 	for _, test := range tests {
-		cipher := &internal.CaesarCipher{Shift: test.shift}
+		cipher := &ciphers.CaesarCipher{Shift: test.shift}
 		if cipher.Decrypt(test.ciphertext) != test.plaintext {
 			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
 		}

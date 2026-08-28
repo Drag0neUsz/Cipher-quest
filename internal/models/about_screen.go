@@ -7,6 +7,7 @@ import (
 )
 
 type AboutScreenModel struct {
+	nextState SessionState
 }
 
 func (m AboutScreenModel) Init() tea.Cmd {
@@ -14,22 +15,31 @@ func (m AboutScreenModel) Init() tea.Cmd {
 }
 
 func InitialAboutScreenModel() AboutScreenModel {
-	return AboutScreenModel{}
-}
-
-func (m AboutScreenModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
+	return AboutScreenModel{
+		nextState: SessionStateAboutScreen,
+	}
 }
 
 func (m *AboutScreenModel) GetNextState() SessionState {
-	return SessionStateAboutScreen
+	c := m.nextState
+	m.nextState = SessionStateAboutScreen
+	return c
 }
 
 func (m AboutScreenModel) Update(msg tea.Msg) (AboutScreenModel, tea.Cmd) {
+	switch msg.(type) {
+	case tea.KeyMsg:
+		msg := msg.(tea.KeyMsg)
+		switch msg.String() {
+		case "q":
+			m.nextState = SessionStateTitleScreen
+			return m, nil
+		}
+	}
 	return m, nil
 }
 
-func (m AboutScreenModel) View() string {
+func (m AboutScreenModel) View() tea.View {
 	b := strings.Builder{}
 	// The header
 
@@ -51,5 +61,8 @@ func (m AboutScreenModel) View() string {
 	}, "\n")
 	b.WriteString(boxStyle.Render(boxTextStyle.Render(body)))
 
-	return b.String()
+	b.WriteString(Footer)
+
+	view := tea.NewView(b.String())
+	return view
 }

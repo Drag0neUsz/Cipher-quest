@@ -11,6 +11,7 @@ type InstructionsScreenModel struct {
 	pages       []string
 	currentPage int
 	totalPages  int
+	nextState   SessionState
 }
 
 func (m InstructionsScreenModel) Init() tea.Cmd {
@@ -23,15 +24,14 @@ func InitialInstructionsScreenModel() InstructionsScreenModel {
 		pages:       pages,
 		currentPage: 0,
 		totalPages:  len(pages),
+		nextState:   SessionStateInstructionsScreen,
 	}
 }
 
-func (m InstructionsScreenModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
-}
-
 func (m *InstructionsScreenModel) GetNextState() SessionState {
-	return SessionStateInstructionsScreen
+	c := m.nextState
+	m.nextState = SessionStateInstructionsScreen
+	return c
 }
 
 func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, tea.Cmd) {
@@ -39,6 +39,9 @@ func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, t
 	case tea.KeyMsg:
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
+		case "q":
+			m.nextState = SessionStateTitleScreen
+			return m, nil
 		case "left", "h":
 			if m.currentPage > 0 {
 				m.currentPage--
@@ -52,7 +55,7 @@ func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, t
 	return m, nil
 }
 
-func (m InstructionsScreenModel) View() string {
+func (m InstructionsScreenModel) View() tea.View {
 	b := strings.Builder{}
 
 	b.WriteString(banner)
@@ -62,6 +65,9 @@ func (m InstructionsScreenModel) View() string {
 	b.WriteString(boxStyle.Render(boxTextStyle.Render(body)))
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf("Page %d of %d", m.currentPage+1, m.totalPages))
+	b.WriteString("\n")
+	b.WriteString(Footer)
 
-	return b.String()
+	view := tea.NewView(b.String())
+	return view
 }

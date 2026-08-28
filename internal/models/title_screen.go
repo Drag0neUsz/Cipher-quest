@@ -66,7 +66,7 @@ func (m TitleScreenModel) Update(msg tea.Msg) (TitleScreenModel, tea.Cmd) {
 	return m, nil
 }
 
-func (m TitleScreenModel) View() string {
+func (m TitleScreenModel) View() tea.View {
 	b := strings.Builder{}
 
 	b.WriteString(banner)
@@ -84,5 +84,8 @@ func (m TitleScreenModel) View() string {
 
 	}
 
-	return b.String()
+	b.WriteString(Footer)
+
+	view := tea.NewView(b.String())
+	return view
 }

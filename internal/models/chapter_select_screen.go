@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	content "github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type Cursor struct {
@@ -13,6 +14,7 @@ type Cursor struct {
 }
 
 type Puzzle struct {
+	Cipher      content.Cipher
 	ID          string
 	Title       string
 	StateLink   SessionState
@@ -21,14 +23,14 @@ type Puzzle struct {
 }
 
 type Chapter struct {
-	Title   string
 	Puzzles []Puzzle
+	Title   string
 }
 
 type ChapterSelectScreenModel struct {
-	chapters []Chapter
-	cursor   Cursor
-	chosen   SessionState
+	chapters  []Chapter
+	cursor    Cursor
+	nextState SessionState
 }
 
 func (m ChapterSelectScreenModel) Init() tea.Cmd {
@@ -38,30 +40,30 @@ func (m ChapterSelectScreenModel) Init() tea.Cmd {
 func InitialChapterSelectScreenModel() ChapterSelectScreenModel {
 	chapters := []Chapter{
 		{Title: "Chapter 1 Substitution Ciphers", Puzzles: []Puzzle{
-			{ID: "caesar", Title: "Caesar Cipher", StateLink: SessionStateTitleScreen, IsCompleted: false, IsLocked: false},
-			{ID: "atbash", Title: "Atbash Cipher", StateLink: SessionStateTitleScreen, IsCompleted: false, IsLocked: false},
-			{ID: "locked", Title: "Locked Cipher", StateLink: SessionStateTitleScreen, IsCompleted: false, IsLocked: true},
+			{ID: "caesar", Title: "Caesar Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false, Cipher: content.CaesarCipher{Shift: 3}},
+			{ID: "atbash", Title: "Atbash Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false},
+			{ID: "locked", Title: "Locked Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: true},
 		}},
 		{Title: "Chapter 2 Transposition Cipher", Puzzles: []Puzzle{
-			{ID: "transposition", Title: "Transposition Cipher", StateLink: SessionStateTitleScreen, IsCompleted: false, IsLocked: false},
-			{ID: "rail_fence", Title: "Rail Fence Cipher", StateLink: SessionStateTitleScreen, IsCompleted: false, IsLocked: true},
+			{ID: "transposition", Title: "Transposition Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false},
+			{ID: "rail_fence", Title: "Rail Fence Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: true},
 		}},
 	}
 	return ChapterSelectScreenModel{
-		chapters: chapters,
-		cursor:   Cursor{chapter: 0, puzzle: 0},
-		chosen:   SessionStateChapterSelectScreen,
+		chapters:  chapters,
+		cursor:    Cursor{chapter: 0, puzzle: 0},
+		nextState: SessionStateChapterSelectScreen,
 	}
 }
 
-func (m ChapterSelectScreenModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
+func (m *ChapterSelectScreenModel) GetNextState() SessionState {
+	c := m.nextState
+	m.nextState = SessionStateChapterSelectScreen
+	return c
 }
 
-func (m *ChapterSelectScreenModel) GetNextState() SessionState {
-	c := m.chosen
-	m.chosen = SessionStateChapterSelectScreen
-	return c
+func (m ChapterSelectScreenModel) GetSelectedPuzzle() Puzzle {
+	return m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle]
 }
 
 // we don't want to have the cursor point at a locked puzzle, no need to check if 0:0 is locked because it wouldn't make sense for the first puzzle to be locked
@@ -100,7 +102,9 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 	case tea.KeyMsg:
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
-
+		case "q":
+			m.nextState = SessionStateTitleScreen
+			return m, nil
 		case "up", "k":
 			m.cursor = m.handleCursorDecrement()
 
@@ -109,14 +113,14 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 
 		case "enter", "space":
 			m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].IsCompleted = !m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].IsCompleted
-			m.chosen = m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].StateLink
+			m.nextState = m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].StateLink
 		}
 	}
 
 	return m, nil
 }
 
-func (m ChapterSelectScreenModel) View() string {
+func (m ChapterSelectScreenModel) View() tea.View {
 	b := strings.Builder{}
 	b.WriteString(banner)
 	b.WriteString("\n")
@@ -145,5 +149,9 @@ func (m ChapterSelectScreenModel) View() string {
 		}
 		b.WriteString("\n")
 	}
-	return b.String()
+
+	b.WriteString(Footer)
+
+	view := tea.NewView(b.String())
+	return view
 }

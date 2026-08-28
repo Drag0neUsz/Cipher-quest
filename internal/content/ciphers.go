@@ -1,4 +1,4 @@
-package internal
+package content
 
 import (
 	"fmt"
@@ -17,19 +17,19 @@ type CaesarCipher struct {
 	Shift int
 }
 
-func (c *CaesarCipher) Name() string {
+func (c CaesarCipher) Name() string {
 	return "Caesar Cipher"
 }
 
-func (c *CaesarCipher) Description() string {
+func (c CaesarCipher) Description() string {
 	return "Caesar Cipher is a type of substitution cipher where each letter in the plaintext is replaced with a letter some fixed number of positions down the alphabet."
 }
 
-func (c *CaesarCipher) Key() string {
+func (c CaesarCipher) Key() string {
 	return fmt.Sprintf("Shift: %d", c.Shift)
 }
 
-func (c *CaesarCipher) Encrypt(plaintext string) string {
+func (c CaesarCipher) Encrypt(plaintext string) string {
 	plaintextRunes := []rune(plaintext)
 	for index, char := range plaintextRunes {
 		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') {
@@ -43,7 +43,7 @@ func (c *CaesarCipher) Encrypt(plaintext string) string {
 	return string(plaintextRunes)
 }
 
-func (c *CaesarCipher) Decrypt(ciphertext string) string {
+func (c CaesarCipher) Decrypt(ciphertext string) string {
 	ciphertextRunes := []rune(ciphertext)
 	for index, char := range ciphertextRunes {
 		if char >= 'A' && char <= 'Z' {

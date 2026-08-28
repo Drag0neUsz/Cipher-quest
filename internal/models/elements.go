@@ -10,6 +10,7 @@ const (
 	SessionStateAboutScreen
 	SessionStateInstructionsScreen
 	SessionStateChapterSelectScreen
+	SessionStatePuzzleScreen
 )
 
 var (
