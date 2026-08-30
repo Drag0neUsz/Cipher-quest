@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	content "github.com/Drag0neUsz/Cipher-quest/internal/content"
+	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type Cursor struct {
@@ -13,25 +13,10 @@ type Cursor struct {
 	puzzle  int
 }
 
-type Puzzle struct {
-	Cipher      content.Cipher
-	ID          string
-	Title       string
-	StateLink   SessionState
-	IsCompleted bool
-	IsLocked    bool
-	Solution    string
-}
-
-type Chapter struct {
-	Puzzles []Puzzle
-	Title   string
-}
-
 type ChapterSelectScreenModel struct {
-	chapters  []Chapter
+	chapters  []content.Chapter
 	cursor    Cursor
-	nextState SessionState
+	nextState content.SessionState
 }
 
 func (m ChapterSelectScreenModel) Init() tea.Cmd {
@@ -39,32 +24,22 @@ func (m ChapterSelectScreenModel) Init() tea.Cmd {
 }
 
 func InitialChapterSelectScreenModel() ChapterSelectScreenModel {
-	chapters := []Chapter{
-		{Title: "Chapter 1 Substitution Ciphers", Puzzles: []Puzzle{
-			{ID: "caesar", Title: "Caesar Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false, Cipher: content.CaesarCipher{Shift: 3}, Solution: "Hello World!"},
-			{ID: "atbash", Title: "Atbash Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false, Solution: "test"},
-			{ID: "locked", Title: "Locked Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: true, Solution: "test"},
-		}},
-		{Title: "Chapter 2 Transposition Cipher", Puzzles: []Puzzle{
-			{ID: "transposition", Title: "Transposition Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: false, Solution: "test"},
-			{ID: "rail_fence", Title: "Rail Fence Cipher", StateLink: SessionStatePuzzleScreen, IsCompleted: false, IsLocked: true, Solution: "test"},
-		}},
-	}
+
 	return ChapterSelectScreenModel{
-		chapters:  chapters,
+		chapters:  content.Chapters,
 		cursor:    Cursor{chapter: 0, puzzle: 0},
-		nextState: SessionStateChapterSelectScreen,
+		nextState: content.SessionStateChapterSelectScreen,
 	}
 }
 
-func (m *ChapterSelectScreenModel) GetNextState() SessionState {
+func (m *ChapterSelectScreenModel) GetNextState() content.SessionState {
 	c := m.nextState
-	m.nextState = SessionStateChapterSelectScreen
+	m.nextState = content.SessionStateChapterSelectScreen
 	return c
 }
 
-func (m ChapterSelectScreenModel) GetSelectedPuzzle() *Puzzle {
-	return &m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle]
+func (m ChapterSelectScreenModel) GetSelectedPuzzle() *content.Puzzle {
+	return m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle]
 }
 
 // we don't want to have the cursor point at a locked puzzle, no need to check if 0:0 is locked because it wouldn't make sense for the first puzzle to be locked
@@ -104,7 +79,7 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 		case "q":
-			m.nextState = SessionStateTitleScreen
+			m.nextState = content.SessionStateTitleScreen
 			return m, nil
 		case "up", "k":
 			m.cursor = m.handleCursorDecrement()
@@ -114,7 +89,7 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 
 		case "enter", "space":
 			// m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].IsCompleted = !m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].IsCompleted
-			m.nextState = m.chapters[m.cursor.chapter].Puzzles[m.cursor.puzzle].StateLink
+			m.nextState = content.SessionStatePuzzleScreen
 		}
 	}
 
@@ -123,7 +98,7 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 
 func (m ChapterSelectScreenModel) View() tea.View {
 	b := strings.Builder{}
-	b.WriteString(banner)
+	b.WriteString(content.Banner)
 	b.WriteString("\n")
 
 	for i, chapter := range m.chapters {
@@ -132,17 +107,17 @@ func (m ChapterSelectScreenModel) View() tea.View {
 		for j, puzzle := range chapter.Puzzles {
 			var row string
 			if m.cursor.chapter == i && m.cursor.puzzle == j {
-				row = selectedItemStyle.Render(fmt.Sprintf("%s %s", "->", puzzle.Title)) + "\n"
+				row = content.SelectedItemStyle.Render(fmt.Sprintf("%s %s", "->", puzzle.Title)) + "\n"
 			} else {
 				switch puzzle.IsLocked {
 				case true:
-					row = fmt.Sprintf("%s %s\n", "  ", lockedItemStyle.Render("\U0001F512", "Locked Puzzle"))
+					row = fmt.Sprintf("%s %s\n", "  ", content.LockedItemStyle.Render("\U0001F512", "Locked Puzzle"))
 				case false:
 					switch puzzle.IsCompleted {
 					case true:
-						row = fmt.Sprintf("%s %s\n", "  ", completedItemStyle.Render("[✓] ", puzzle.Title))
+						row = fmt.Sprintf("%s %s\n", "  ", content.CompletedItemStyle.Render("[✓] ", puzzle.Title))
 					case false:
-						row = fmt.Sprintf("%s %s\n", "  ", incompleteItemStyle.Render("[ ] ", puzzle.Title))
+						row = fmt.Sprintf("%s %s\n", "  ", content.IncompleteItemStyle.Render("[ ] ", puzzle.Title))
 					}
 				}
 			}
@@ -151,7 +126,7 @@ func (m ChapterSelectScreenModel) View() tea.View {
 		b.WriteString("\n")
 	}
 
-	b.WriteString(Footer)
+	b.WriteString(content.Footer)
 
 	view := tea.NewView(b.String())
 	return view

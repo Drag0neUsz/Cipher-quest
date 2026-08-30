@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -10,20 +11,23 @@ import (
 )
 
 type PuzzleScreenModel struct {
-	puzzle        *Puzzle
-	nextState     SessionState
-	inputMode     bool
-	currentInput  string
-	lastInput     string
-	textInput     textinput.Model
-	submitAttempt bool
+	puzzle                *content.Puzzle
+	nextState             content.SessionState
+	inputMode             bool
+	currentInput          string
+	lastInput             string
+	textInput             textinput.Model
+	submitAttempt         bool
+	currentContentIndex   int
+	completedContentIndex *int
+	showStageCompletion   bool
 }
 
 func (m PuzzleScreenModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func InitialPuzzleScreenModel(puzzle *Puzzle) PuzzleScreenModel {
+func InitialPuzzleScreenModel(puzzle *content.Puzzle) PuzzleScreenModel {
 	ti := textinput.New()
 	ti.Placeholder = "ENTER to start typing..."
 	ti.SetVirtualCursor(false)
@@ -32,12 +36,15 @@ func InitialPuzzleScreenModel(puzzle *Puzzle) PuzzleScreenModel {
 	ti.SetWidth(20)
 
 	return PuzzleScreenModel{
-		puzzle:        puzzle,
-		nextState:     SessionStatePuzzleScreen,
-		inputMode:     false,
-		currentInput:  "",
-		textInput:     ti,
-		submitAttempt: false,
+		puzzle:                puzzle,
+		nextState:             content.SessionStatePuzzleScreen,
+		inputMode:             false,
+		currentInput:          "",
+		textInput:             ti,
+		submitAttempt:         false,
+		currentContentIndex:   0,
+		completedContentIndex: &puzzle.CompletedContentIndex,
+		showStageCompletion:   false,
 	}
 }
 
@@ -45,13 +52,13 @@ func checkAnswer(c content.Cipher, answer string, solution string) bool {
 	return c.Encrypt(answer) == c.Encrypt(solution)
 }
 
-func (m PuzzleScreenModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
+func (m PuzzleScreenModel) GetPreviousState() content.SessionState {
+	return content.SessionStateTitleScreen
 }
 
-func (m *PuzzleScreenModel) GetNextState() SessionState {
+func (m *PuzzleScreenModel) GetNextState() content.SessionState {
 	c := m.nextState
-	m.nextState = SessionStatePuzzleScreen
+	m.nextState = content.SessionStatePuzzleScreen
 	return c
 }
 
@@ -63,13 +70,28 @@ func (m PuzzleScreenModel) Update(msg tea.Msg) (PuzzleScreenModel, tea.Cmd) {
 		if !m.inputMode {
 			switch msg.String() {
 			case "q":
-				m.nextState = SessionStateChapterSelectScreen
+				m.nextState = content.SessionStateChapterSelectScreen
 				return m, nil
 
 			case "enter", "space":
-				m.inputMode = true
-				m.currentInput = ""
+				if m.showStageCompletion {
+					m.showStageCompletion = false
+					if m.currentContentIndex < len(m.puzzle.Content)-1 {
+						m.currentContentIndex++
+					} else {
+						m.puzzle.IsCompleted = true
+						m.nextState = content.SessionStateChapterSelectScreen
+					}
+					return m, nil
+				}
+				if m.currentContentIndex > *m.completedContentIndex {
+					m.inputMode = true
+					m.currentInput = ""
+				} else {
+					m.showStageCompletion = true
+				}
 				m.textInput.Reset()
+				m.submitAttempt = false
 				return m, nil
 			}
 			m.submitAttempt = false
@@ -82,9 +104,9 @@ func (m PuzzleScreenModel) Update(msg tea.Msg) (PuzzleScreenModel, tea.Cmd) {
 				m.submitAttempt = true
 				m.inputMode = false
 				m.currentInput = m.textInput.Value()
-				result := checkAnswer(m.puzzle.Cipher, m.currentInput, m.puzzle.Solution)
+				result := checkAnswer(m.puzzle.Cipher, m.currentInput, m.puzzle.Content[m.currentContentIndex].Solution)
 				if result {
-					m.puzzle.IsCompleted = true
+					*m.completedContentIndex++
 				}
 				return m, nil
 			default:
@@ -97,18 +119,30 @@ func (m PuzzleScreenModel) Update(msg tea.Msg) (PuzzleScreenModel, tea.Cmd) {
 	return m, cmd
 }
 
+func (m PuzzleScreenModel) getProgressString() string {
+	var completedString string
+	if m.puzzle.IsCompleted {
+		completedString = "[COMPLETED]"
+	}
+	return fmt.Sprintf(" (%d/%d) %s", m.currentContentIndex+1, len(m.puzzle.Content), completedString)
+}
+
 func (m PuzzleScreenModel) View() tea.View {
 	b := strings.Builder{}
-	b.WriteString(banner)
+	b.WriteString(content.Banner)
 	b.WriteString("\n")
 	b.WriteString(m.puzzle.Title)
+	b.WriteString(m.getProgressString())
 	b.WriteString("\n")
-	body := strings.Builder{}
+	var body string
 	if m.puzzle.Cipher != nil {
-		body.WriteString(m.puzzle.Cipher.Description())
+		if !m.showStageCompletion {
+			body = m.puzzle.Content[m.currentContentIndex].Story
+		} else {
+			body = m.puzzle.Content[m.currentContentIndex].CompletionMessage
+		}
 	}
-	body.WriteString("\n")
-	b.WriteString(boxStyle.Render(body.String()))
+	b.WriteString(content.BoxStyle.Render(body))
 	b.WriteString("\n")
 
 	var c *tea.Cursor
@@ -117,16 +151,21 @@ func (m PuzzleScreenModel) View() tea.View {
 		c.Y += lipgloss.Height(b.String()) - 1
 	}
 
-	b.WriteString(m.textInput.View())
-	b.WriteString("\n")
-	if m.puzzle.IsCompleted {
-		b.WriteString("Congratulations! You have completed this puzzle!")
+	var submitText string
+	if m.currentContentIndex <= *m.completedContentIndex {
+		m.textInput.SetValue(m.puzzle.Content[m.currentContentIndex].Solution)
+		submitText = "Great job! Press ENTER to continue..."
 	} else if m.submitAttempt {
-		b.WriteString("Not Quite! Try again!")
+		submitText = "Not Quite! Try again!"
 	}
-	b.WriteString("\n")
+	if !m.showStageCompletion {
+		b.WriteString(m.textInput.View())
+		b.WriteString("\n")
+	}
+	b.WriteString(submitText)
 
-	b.WriteString(Footer)
+	b.WriteString("\n")
+	b.WriteString(content.Footer)
 
 	view := tea.NewView(b.String())
 	if m.inputMode {

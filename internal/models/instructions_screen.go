@@ -5,13 +5,14 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type InstructionsScreenModel struct {
 	pages       []string
 	currentPage int
 	totalPages  int
-	nextState   SessionState
+	nextState   content.SessionState
 }
 
 func (m InstructionsScreenModel) Init() tea.Cmd {
@@ -24,13 +25,13 @@ func InitialInstructionsScreenModel() InstructionsScreenModel {
 		pages:       pages,
 		currentPage: 0,
 		totalPages:  len(pages),
-		nextState:   SessionStateInstructionsScreen,
+		nextState:   content.SessionStateInstructionsScreen,
 	}
 }
 
-func (m *InstructionsScreenModel) GetNextState() SessionState {
+func (m *InstructionsScreenModel) GetNextState() content.SessionState {
 	c := m.nextState
-	m.nextState = SessionStateInstructionsScreen
+	m.nextState = content.SessionStateInstructionsScreen
 	return c
 }
 
@@ -40,7 +41,7 @@ func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, t
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 		case "q":
-			m.nextState = SessionStateTitleScreen
+			m.nextState = content.SessionStateTitleScreen
 			return m, nil
 		case "left", "h":
 			if m.currentPage > 0 {
@@ -58,15 +59,15 @@ func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, t
 func (m InstructionsScreenModel) View() tea.View {
 	b := strings.Builder{}
 
-	b.WriteString(banner)
+	b.WriteString(content.Banner)
 	b.WriteString("\n")
 
 	body := m.pages[m.currentPage]
-	b.WriteString(boxStyle.Render(boxTextStyle.Render(body)))
+	b.WriteString(content.BoxStyle.Render(content.BoxTextStyle.Render(body)))
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf("Page %d of %d", m.currentPage+1, m.totalPages))
 	b.WriteString("\n")
-	b.WriteString(Footer)
+	b.WriteString(content.Footer)
 
 	view := tea.NewView(b.String())
 	return view

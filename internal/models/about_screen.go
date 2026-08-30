@@ -4,10 +4,11 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type AboutScreenModel struct {
-	nextState SessionState
+	nextState content.SessionState
 }
 
 func (m AboutScreenModel) Init() tea.Cmd {
@@ -16,13 +17,13 @@ func (m AboutScreenModel) Init() tea.Cmd {
 
 func InitialAboutScreenModel() AboutScreenModel {
 	return AboutScreenModel{
-		nextState: SessionStateAboutScreen,
+		nextState: content.SessionStateAboutScreen,
 	}
 }
 
-func (m *AboutScreenModel) GetNextState() SessionState {
+func (m *AboutScreenModel) GetNextState() content.SessionState {
 	c := m.nextState
-	m.nextState = SessionStateAboutScreen
+	m.nextState = content.SessionStateAboutScreen
 	return c
 }
 
@@ -32,7 +33,7 @@ func (m AboutScreenModel) Update(msg tea.Msg) (AboutScreenModel, tea.Cmd) {
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 		case "q":
-			m.nextState = SessionStateTitleScreen
+			m.nextState = content.SessionStateTitleScreen
 			return m, nil
 		}
 	}
@@ -43,7 +44,7 @@ func (m AboutScreenModel) View() tea.View {
 	b := strings.Builder{}
 	// The header
 
-	b.WriteString(banner)
+	b.WriteString(content.Banner)
 	b.WriteString("\n")
 
 	body := strings.Join([]string{
@@ -59,9 +60,9 @@ func (m AboutScreenModel) View() tea.View {
 		"",
 		"P.S. I may or may not have hidden some easter eggs in the code as well as a secret zoo level :D",
 	}, "\n")
-	b.WriteString(boxStyle.Render(boxTextStyle.Render(body)))
+	b.WriteString(content.BoxStyle.Render(content.BoxTextStyle.Render(body)))
 
-	b.WriteString(Footer)
+	b.WriteString(content.Footer)
 
 	view := tea.NewView(b.String())
 	return view

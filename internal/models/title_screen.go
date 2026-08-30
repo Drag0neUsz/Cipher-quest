@@ -5,19 +5,20 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type TitleScreenModel struct {
 	choices []string
 	cursor  int
-	choice  SessionState
+	choice  content.SessionState
 }
 
-var titleScreenStateChoices = []SessionState{
-	SessionStateAboutScreen,
-	SessionStateInstructionsScreen,
-	SessionStateDemo,
-	SessionStateChapterSelectScreen,
+var titleScreenStateChoices = []content.SessionState{
+	content.SessionStateAboutScreen,
+	content.SessionStateInstructionsScreen,
+	content.SessionStateDemo,
+	content.SessionStateChapterSelectScreen,
 }
 
 func (m TitleScreenModel) Init() tea.Cmd {
@@ -28,17 +29,17 @@ func InitialTitleScreenModel() TitleScreenModel {
 	return TitleScreenModel{
 		choices: []string{"About", "Instructions", "Demo", "Chapter Select"},
 		cursor:  0,
-		choice:  SessionStateTitleScreen,
+		choice:  content.SessionStateTitleScreen,
 	}
 }
 
-func (m TitleScreenModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
+func (m TitleScreenModel) GetPreviousState() content.SessionState {
+	return content.SessionStateTitleScreen
 }
 
-func (m *TitleScreenModel) GetNextState() SessionState {
+func (m *TitleScreenModel) GetNextState() content.SessionState {
 	c := m.choice
-	m.choice = SessionStateTitleScreen
+	m.choice = content.SessionStateTitleScreen
 	return c
 }
 
@@ -69,14 +70,14 @@ func (m TitleScreenModel) Update(msg tea.Msg) (TitleScreenModel, tea.Cmd) {
 func (m TitleScreenModel) View() tea.View {
 	b := strings.Builder{}
 
-	b.WriteString(banner)
+	b.WriteString(content.Banner)
 	b.WriteString("\n")
 
 	for i, choice := range m.choices {
 
 		cursor := "  "
 		if m.cursor == i {
-			b.WriteString(selectedItemStyle.Render(fmt.Sprintf("%s %s", "->", choice)))
+			b.WriteString(content.SelectedItemStyle.Render(fmt.Sprintf("%s %s", "->", choice)))
 			b.WriteString("\n")
 		} else {
 			b.WriteString(fmt.Sprintf("%s %s\n", cursor, choice))
@@ -84,7 +85,7 @@ func (m TitleScreenModel) View() tea.View {
 
 	}
 
-	b.WriteString(Footer)
+	b.WriteString(content.Footer)
 
 	view := tea.NewView(b.String())
 	return view

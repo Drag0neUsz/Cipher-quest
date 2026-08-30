@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
 
 type DemoModel struct {
@@ -24,12 +25,12 @@ func InitialDemoModel() DemoModel {
 	}
 }
 
-func (m DemoModel) GetPreviousState() SessionState {
-	return SessionStateTitleScreen
+func (m DemoModel) GetPreviousState() content.SessionState {
+	return content.SessionStateTitleScreen
 }
 
-func (m DemoModel) GetNextState() SessionState {
-	return SessionStateDemo
+func (m DemoModel) GetNextState() content.SessionState {
+	return content.SessionStateDemo
 }
 
 func (m DemoModel) Update(msg tea.Msg) (DemoModel, tea.Cmd) {
