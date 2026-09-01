@@ -23,6 +23,13 @@ type PuzzleScreenModel struct {
 	showStageCompletion   bool
 }
 
+func (m PuzzleScreenModel) GetUnlockQueue() []string {
+	if m.puzzle.IsCompleted {
+		return m.puzzle.UnlocksIDs
+	}
+	return []string{}
+}
+
 func (m PuzzleScreenModel) Init() tea.Cmd {
 	return textinput.Blink
 }

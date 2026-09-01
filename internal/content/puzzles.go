@@ -25,6 +25,7 @@ type Puzzle struct {
 	IsLocked              bool
 	Content               []content
 	CompletedContentIndex int
+	UnlocksIDs            []string
 }
 
 var Chapters = generateChapters()
@@ -32,9 +33,9 @@ var Chapters = generateChapters()
 func generateChapters() []Chapter {
 	return []Chapter{
 		{Title: "Chapter 1 Substitution Ciphers", Puzzles: []*Puzzle{
-			{ID: "caesar", Title: "Caesar Cipher", IsCompleted: false, IsLocked: false, Cipher: CaesarCipher{Shift: 3}, Content: pickCaesar(), CompletedContentIndex: -1},
+			{ID: "caesar", Title: "Caesar Cipher", IsCompleted: false, IsLocked: false, Cipher: CaesarCipher{Shift: 3}, Content: pickCaesar(), CompletedContentIndex: -1, UnlocksIDs: []string{"vernam", "rail_fence"}},
 			{ID: "atbash", Title: "Atbash Cipher", IsCompleted: false, IsLocked: false, Content: []content{}, CompletedContentIndex: -1},
-			{ID: "locked", Title: "Locked Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1},
+			{ID: "vernam", Title: "Boinkers Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1},
 		}},
 		{Title: "Chapter 2 Transposition Cipher", Puzzles: []*Puzzle{
 			{ID: "transposition", Title: "Transposition Cipher", IsCompleted: false, IsLocked: false, Content: []content{}, CompletedContentIndex: -1},
@@ -136,7 +137,6 @@ func pickCaesar() []content {
 		},
 	}
 }
-
 
 func caesarInterceptStory(encoder CaesarCipher, c choice, stage int) string {
 	var b strings.Builder

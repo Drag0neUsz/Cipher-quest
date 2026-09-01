@@ -14,9 +14,10 @@ type Cursor struct {
 }
 
 type ChapterSelectScreenModel struct {
-	chapters  []content.Chapter
-	cursor    Cursor
-	nextState content.SessionState
+	chapters    []content.Chapter
+	cursor      Cursor
+	nextState   content.SessionState
+	unlockQueue []string
 }
 
 func (m ChapterSelectScreenModel) Init() tea.Cmd {
@@ -71,6 +72,29 @@ func (m ChapterSelectScreenModel) handleCursorIncrement(lastOkay Cursor) Cursor 
 		return m.handleCursorIncrement(lastOkay)
 	}
 	return m.cursor
+}
+
+func (m *ChapterSelectScreenModel) UnlockStuff() tea.Cmd {
+	if len(m.unlockQueue) == 0 {
+		return nil
+	}
+	for _, puzzleID := range m.unlockQueue {
+	SearchPuzzle:
+		for _, chapter := range m.chapters {
+			for _, puzzle := range chapter.Puzzles {
+				if puzzle.ID == puzzleID {
+					puzzle.IsLocked = false
+					break SearchPuzzle
+				}
+			}
+		}
+	}
+	m.unlockQueue = []string{}
+	return nil
+}
+
+func (m *ChapterSelectScreenModel) SetUnlockQueue(unlockQueue []string) {
+	m.unlockQueue = unlockQueue
 }
 
 func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel, tea.Cmd) {

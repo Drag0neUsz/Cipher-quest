@@ -39,52 +39,48 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-
+	var next content.SessionState
 	switch m.state {
 	case content.SessionStateTitleScreen:
 		m.titleScreen, cmd = m.titleScreen.Update(msg)
-		if next := m.titleScreen.GetNextState(); next != m.state {
-			m.state = next
-		}
+		next = m.titleScreen.GetNextState()
 
 	case content.SessionStateAboutScreen:
 		m.aboutScreen, cmd = m.aboutScreen.Update(msg)
-		if next := m.aboutScreen.GetNextState(); next != m.state {
-			m.state = next
-		}
+		next = m.aboutScreen.GetNextState()
 
 	case content.SessionStateInstructionsScreen:
 		m.instructionsScreen, cmd = m.instructionsScreen.Update(msg)
-		if next := m.instructionsScreen.GetNextState(); next != m.state {
-			m.state = next
-		}
+		next = m.instructionsScreen.GetNextState()
 
 	case content.SessionStateDemo:
 		m.demo, cmd = m.demo.Update(msg)
-		if next := m.demo.GetNextState(); next != m.state {
-			m.state = next
-		}
+		next = m.demo.GetNextState()
 
 	case content.SessionStateChapterSelectScreen:
 		m.chapterSelectScreen, cmd = m.chapterSelectScreen.Update(msg)
 
-		// Obsługa wyboru konkretnego poziomu
-		if next := m.chapterSelectScreen.GetNextState(); next != m.state {
-			if next == content.SessionStatePuzzleScreen {
-				// Dynamicznie ładujemy wybrany puzzle do ekranu gry
-				puzzle := m.chapterSelectScreen.GetSelectedPuzzle()
-				m.puzzleScreen = models.InitialPuzzleScreenModel(puzzle)
-				m.state = next
-				return m, m.puzzleScreen.Init()
-			}
-			m.state = next
+		next = m.chapterSelectScreen.GetNextState()
+		if next == content.SessionStatePuzzleScreen {
+			puzzle := m.chapterSelectScreen.GetSelectedPuzzle()
+			m.puzzleScreen = models.InitialPuzzleScreenModel(puzzle)
+			m.state = content.SessionStatePuzzleScreen
+			return m, m.puzzleScreen.Init()
 		}
 
 	case content.SessionStatePuzzleScreen:
 		m.puzzleScreen, cmd = m.puzzleScreen.Update(msg)
-		if next := m.puzzleScreen.GetNextState(); next != m.state {
+		next = m.puzzleScreen.GetNextState()
+		if next == content.SessionStateChapterSelectScreen {
 			m.state = next
+			m.chapterSelectScreen.SetUnlockQueue(m.puzzleScreen.GetUnlockQueue())
+			return m, m.chapterSelectScreen.UnlockStuff()
 		}
+
+	}
+
+	if next != m.state {
+		m.state = next
 	}
 
 	return m, cmd
