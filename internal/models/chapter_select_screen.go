@@ -74,6 +74,14 @@ func (m ChapterSelectScreenModel) handleCursorIncrement(lastOkay Cursor) Cursor 
 	return m.cursor
 }
 
+func (m *ChapterSelectScreenModel) UnlockAll() {
+	for _, chapter := range m.chapters {
+		for _, puzzle := range chapter.Puzzles {
+			puzzle.IsLocked = false
+		}
+	}
+}
+
 func (m *ChapterSelectScreenModel) UnlockStuff() tea.Cmd {
 	if len(m.unlockQueue) == 0 {
 		return nil
@@ -102,6 +110,8 @@ func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel,
 	case tea.KeyMsg:
 		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
+		case "f5":
+			m.UnlockAll()
 		case "q":
 			m.nextState = content.SessionStateTitleScreen
 			return m, nil

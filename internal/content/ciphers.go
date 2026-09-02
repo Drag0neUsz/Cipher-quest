@@ -62,3 +62,39 @@ func (c CaesarCipher) Decrypt(ciphertext string) string {
 	}
 	return string(ciphertextRunes)
 }
+
+type AtbashCipher struct {
+}
+
+func (c AtbashCipher) Name() string {
+	return "Atbash Cipher"
+}
+
+func (c AtbashCipher) Description() string {
+	return `Atbash Cipher is a substitution cipher where each letter in the plaintext is replaced with the letter that is the same distance from the end of the alphabet.
+
+	Example:
+	Plaintext: HELLO
+	Ciphertext: SVOOL
+	`
+}
+
+func (c AtbashCipher) Key() string {
+	return "No key required"
+}
+
+func (c AtbashCipher) Encrypt(plaintext string) string {
+	plaintextRunes := []rune(plaintext)
+	for index, char := range plaintextRunes {
+		if char >= 'A' && char <= 'Z' {
+			plaintextRunes[index] = 'A' + ('Z'-char)%26
+		} else if char >= 'a' && char <= 'z' {
+			plaintextRunes[index] = 'a' + ('z'-char)%26
+		}
+	}
+	return string(plaintextRunes)
+}
+
+func (c AtbashCipher) Decrypt(ciphertext string) string {
+	return c.Encrypt(ciphertext) // Atbash is symmetric
+}

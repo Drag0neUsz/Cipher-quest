@@ -55,3 +55,41 @@ func TestCaesarCipherDecrypt(t *testing.T) {
 		t.Logf("Test %s with shift %d passed", test.ciphertext, test.shift)
 	}
 }
+
+func TestAtbashCipherEncrypt(t *testing.T) {
+	tests := []struct {
+		plaintext  string
+		ciphertext string
+	}{
+		{"Hello, World!", "Svool, Dliow!"},
+		{"abcdefghijklmnopqrstuvwxyz", "zyxwvutsrqponmlkjihgfedcba"},
+		{"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ZYXWVUTSRQPONMLKJIHGFEDCBA"},
+	}
+	for _, test := range tests {
+		cipher := &ciphers.AtbashCipher{}
+		if cipher.Encrypt(test.plaintext) != test.ciphertext {
+			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.ciphertext, cipher.Encrypt(test.plaintext))
+		}
+		t.Logf("Expected %s, got %s", test.ciphertext, cipher.Encrypt(test.plaintext))
+		t.Logf("Test %s passed", test.plaintext)
+	}
+}
+
+func TestAtbashCipherDecrypt(t *testing.T) {
+	tests := []struct {
+		ciphertext string
+		plaintext  string
+	}{
+		{"Svool, Dliow!", "Hello, World!"},
+		{"zyxwvutsrqponmlkjihgfedcba", "abcdefghijklmnopqrstuvwxyz"},
+		{"ZYXWVUTSRQPONMLKJIHGFEDCBA", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
+	}
+	for _, test := range tests {
+		cipher := &ciphers.AtbashCipher{}
+		if cipher.Decrypt(test.ciphertext) != test.plaintext {
+			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
+		}
+		t.Logf("Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
+		t.Logf("Test %s passed", test.ciphertext)
+	}
+}
