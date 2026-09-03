@@ -106,9 +106,8 @@ func (m *ChapterSelectScreenModel) SetUnlockQueue(unlockQueue []string) {
 }
 
 func (m ChapterSelectScreenModel) Update(msg tea.Msg) (ChapterSelectScreenModel, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 		case "f5":
 			m.UnlockAll()

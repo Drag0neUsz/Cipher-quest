@@ -34,9 +34,8 @@ func (m DemoModel) GetNextState() content.SessionState {
 }
 
 func (m DemoModel) Update(msg tea.Msg) (DemoModel, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		// Cool, what was the actual key pressed?
 		switch msg.String() {
 

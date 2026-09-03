@@ -35,11 +35,12 @@ func (m *InstructionsScreenModel) GetNextState() content.SessionState {
 	return c
 }
 
-func (m InstructionsScreenModel) Update(msg tea.Msg) (InstructionsScreenModel, tea.Cmd) {
-	switch msg.(type) {
+func (m InstructionsScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
 		case "q":
 			m.nextState = content.SessionStateTitleScreen
 			return m, nil
@@ -67,8 +68,11 @@ func (m InstructionsScreenModel) View() tea.View {
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf("Page %d of %d", m.currentPage+1, m.totalPages))
 	b.WriteString("\n")
-	b.WriteString(content.Footer)
+	b.WriteString(content.FooterStyle.Render("ctrl+c to quit."))
 
-	view := tea.NewView(b.String())
+	view := tea.View{
+		Content:   b.String(),
+		AltScreen: true,
+	}
 	return view
 }

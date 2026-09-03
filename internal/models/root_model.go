@@ -1,33 +1,30 @@
-package main
+package models
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Drag0neUsz/Cipher-quest/internal/content"
-	models "github.com/Drag0neUsz/Cipher-quest/internal/models"
 )
 
 type RootModel struct {
 	state               content.SessionState
-	titleScreen         models.TitleScreenModel
-	aboutScreen         models.AboutScreenModel
-	instructionsScreen  models.InstructionsScreenModel
-	demo                models.DemoModel
-	chapterSelectScreen models.ChapterSelectScreenModel
-	puzzleScreen        models.PuzzleScreenModel
+	titleScreen         TitleScreenModel
+	aboutScreen         AboutScreenModel
+	demo                DemoModel
+	chapterSelectScreen ChapterSelectScreenModel
+	puzzleScreen        PuzzleScreenModel
 }
 
 func (m RootModel) Init() tea.Cmd {
 	return nil
 }
 
-func initialRootModel() RootModel {
+func InitialRootModel() RootModel {
 	return RootModel{
 		state:               content.SessionStateTitleScreen,
-		titleScreen:         models.InitialTitleScreenModel(),
-		instructionsScreen:  models.InitialInstructionsScreenModel(),
-		demo:                models.InitialDemoModel(),
-		chapterSelectScreen: models.InitialChapterSelectScreenModel(),
-		aboutScreen:         models.InitialAboutScreenModel(),
+		titleScreen:         InitialTitleScreenModel(),
+		demo:                InitialDemoModel(),
+		chapterSelectScreen: InitialChapterSelectScreenModel(),
+		aboutScreen:         InitialAboutScreenModel(),
 	}
 }
 
@@ -49,10 +46,6 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.aboutScreen, cmd = m.aboutScreen.Update(msg)
 		next = m.aboutScreen.GetNextState()
 
-	case content.SessionStateInstructionsScreen:
-		m.instructionsScreen, cmd = m.instructionsScreen.Update(msg)
-		next = m.instructionsScreen.GetNextState()
-
 	case content.SessionStateDemo:
 		m.demo, cmd = m.demo.Update(msg)
 		next = m.demo.GetNextState()
@@ -63,7 +56,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		next = m.chapterSelectScreen.GetNextState()
 		if next == content.SessionStatePuzzleScreen {
 			puzzle := m.chapterSelectScreen.GetSelectedPuzzle()
-			m.puzzleScreen = models.InitialPuzzleScreenModel(puzzle)
+			m.puzzleScreen = InitialPuzzleScreenModel(puzzle)
 			m.state = content.SessionStatePuzzleScreen
 			return m, m.puzzleScreen.Init()
 		}
@@ -93,8 +86,6 @@ func (m RootModel) View() tea.View {
 		view = m.titleScreen.View()
 	case content.SessionStateAboutScreen:
 		view = m.aboutScreen.View()
-	case content.SessionStateInstructionsScreen:
-		view = m.instructionsScreen.View()
 	case content.SessionStateDemo:
 		view = m.demo.View()
 	case content.SessionStateChapterSelectScreen:

@@ -71,9 +71,8 @@ func (m *PuzzleScreenModel) GetNextState() content.SessionState {
 
 func (m PuzzleScreenModel) Update(msg tea.Msg) (PuzzleScreenModel, tea.Cmd) {
 	var cmd tea.Cmd
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		if !m.inputMode {
 			switch msg.String() {
 			case "q":

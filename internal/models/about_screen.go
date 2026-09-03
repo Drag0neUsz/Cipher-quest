@@ -28,9 +28,8 @@ func (m *AboutScreenModel) GetNextState() content.SessionState {
 }
 
 func (m AboutScreenModel) Update(msg tea.Msg) (AboutScreenModel, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 		case "q":
 			m.nextState = content.SessionStateTitleScreen

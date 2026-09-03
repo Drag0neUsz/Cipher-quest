@@ -16,7 +16,6 @@ type TitleScreenModel struct {
 
 var titleScreenStateChoices = []content.SessionState{
 	content.SessionStateAboutScreen,
-	content.SessionStateInstructionsScreen,
 	content.SessionStateDemo,
 	content.SessionStateChapterSelectScreen,
 }
@@ -27,7 +26,7 @@ func (m TitleScreenModel) Init() tea.Cmd {
 
 func InitialTitleScreenModel() TitleScreenModel {
 	return TitleScreenModel{
-		choices: []string{"About", "Instructions", "Demo", "Chapter Select"},
+		choices: []string{"About", "Demo", "Chapter Select"},
 		cursor:  0,
 		choice:  content.SessionStateTitleScreen,
 	}
@@ -44,9 +43,8 @@ func (m *TitleScreenModel) GetNextState() content.SessionState {
 }
 
 func (m TitleScreenModel) Update(msg tea.Msg) (TitleScreenModel, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		msg := msg.(tea.KeyMsg)
 		switch msg.String() {
 
 		case "up", "k":
