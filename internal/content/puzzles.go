@@ -25,12 +25,16 @@ type Puzzle struct {
 var Chapters = generateChapters()
 
 func generateChapters() []Chapter {
+	keywordCipher, err := NewKeywordCipher("julius")
+	if err != nil {
+		panic(err)
+	}
 	return []Chapter{
 		{Title: "Chapter 1 Substitution Ciphers", Puzzles: []*Puzzle{
 			{ID: "caesar", Title: "Caesar Cipher", IsCompleted: false, IsLocked: false, Cipher: CaesarCipher{Shift: 3}, Content: pickIntercepts(CaesarCipher{Shift: 3}, caesarIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"atbash"}},
 			{ID: "atbash", Title: "Atbash Cipher", IsCompleted: false, IsLocked: true, Cipher: AtbashCipher{}, Content: pickIntercepts(AtbashCipher{}, atbashIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"keyword"}},
 			// scripts: keywordIntercepts; expected: KeywordCipher, key JULIUS
-			{ID: "keyword", Title: "Keyword Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1, UnlocksIDs: []string{"affine"}},
+			{ID: "keyword", Title: "Keyword Cipher", IsCompleted: false, IsLocked: true, Cipher: keywordCipher, Content: pickIntercepts(keywordCipher, keywordIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"affine"}},
 			// scripts: affineIntercepts; expected: AffineCipher, keys 5, 8
 			{ID: "affine", Title: "Affine Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1, UnlocksIDs: []string{"scytale"}},
 		}},

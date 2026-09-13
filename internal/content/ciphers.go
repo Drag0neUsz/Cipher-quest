@@ -2,6 +2,8 @@ package content
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 	"unicode"
 )
 
@@ -84,4 +86,79 @@ func (c AtbashCipher) Encrypt(plaintext string) string {
 
 func (c AtbashCipher) Decrypt(ciphertext string) string {
 	return c.Encrypt(ciphertext) // Atbash is symmetric
+}
+
+type KeywordCipher struct {
+	Keyword    string
+	Dictionary []rune
+}
+
+func removeDuplicates(slice []rune) []rune {
+	seen := make(map[rune]struct{})
+	var result []rune
+	for _, v := range slice {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
+func NewKeywordCipher(keyword string) (KeywordCipher, error) {
+	alphabet := []rune("abcdefghijklmnopqrstuvwxyz")
+	dictionary := []rune{}
+	keywordRunes := []rune(strings.ToLower(keyword))
+	keywordRunes = removeDuplicates(keywordRunes)
+	for _, char := range keywordRunes {
+		dictionary = append(dictionary, char)
+	}
+	for _, char := range alphabet {
+		if !slices.Contains(dictionary, char) {
+			dictionary = append(dictionary, char)
+		}
+	}
+	return KeywordCipher{Keyword: keyword, Dictionary: dictionary}, nil
+}
+
+func (c KeywordCipher) Name() string {
+	return "Keyword Cipher"
+}
+
+func (c KeywordCipher) Key() string {
+	return fmt.Sprintf("Keyword: %s, Alphabet: %v", c.Keyword, c.Dictionary)
+}
+
+func (c KeywordCipher) Encrypt(plaintext string) string {
+	plaintextRunes := []rune(plaintext)
+	for index, char := range plaintextRunes {
+		lower := unicode.ToLower(char)
+		if lower >= 'a' && lower <= 'z' {
+			substitute := c.Dictionary[lower-'a']
+			if unicode.IsUpper(char) {
+				plaintextRunes[index] = unicode.ToUpper(substitute)
+			} else {
+				plaintextRunes[index] = substitute
+			}
+		}
+	}
+	return string(plaintextRunes)
+}
+
+func (c KeywordCipher) Decrypt(ciphertext string) string {
+	ciphertextRunes := []rune(ciphertext)
+	for index, char := range ciphertextRunes {
+		lower := unicode.ToLower(char)
+		if lower >= 'a' && lower <= 'z' {
+			pos := slices.Index(c.Dictionary, lower)
+			if index != -1 {
+				if unicode.IsUpper(char) {
+					ciphertextRunes[index] = unicode.ToUpper(rune('a' + pos))
+				} else {
+					ciphertextRunes[index] = rune('a' + pos)
+				}
+			}
+		}
+	}
+	return string(ciphertextRunes)
 }

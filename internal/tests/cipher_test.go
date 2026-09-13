@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"slices"
 	"testing"
 
 	ciphers "github.com/Drag0neUsz/Cipher-quest/internal/content"
@@ -86,6 +87,71 @@ func TestAtbashCipherDecrypt(t *testing.T) {
 	}
 	for _, test := range tests {
 		cipher := &ciphers.AtbashCipher{}
+		if cipher.Decrypt(test.ciphertext) != test.plaintext {
+			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
+		}
+		t.Logf("Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
+		t.Logf("Test %s passed", test.ciphertext)
+	}
+}
+
+func TestNewKeywordCipher(t *testing.T) {
+	tests := []struct {
+		keyword    string
+		dictionary []rune
+	}{
+		{"keyword", []rune("keywordabcfghijlmnpqstuvxz")},
+		{"grandmother", []rune("grandmothebcfijklpqsuvwxyz")},
+	}
+	for _, test := range tests {
+		cipher, err := ciphers.NewKeywordCipher(test.keyword)
+		if err != nil {
+			t.Fatalf(">>>>> FAILED: Expected nil, got %s", err)
+		}
+		if !slices.Equal(cipher.Dictionary, test.dictionary) {
+			t.Fatalf(">>>>> FAILED: Expected %v, got %v", test.dictionary, cipher.Dictionary)
+		}
+		t.Logf("Expected %v, got %v", test.dictionary, cipher.Dictionary)
+		t.Logf("Test %s passed", test.keyword)
+	}
+}
+
+func TestKeywordCipherEncrypt(t *testing.T) {
+	tests := []struct {
+		keyword    string
+		plaintext  string
+		ciphertext string
+	}{
+		{"zebras", "Flee at once. WE are discovered!", "Siaa zq lkba. VA zoa rfpbluaoar!"},
+		{"grandmother", "flee at OnCe. wE aRE diScovered!", "mcdd gs JiAd. wD gPD nhQajvdpdn!"},
+	}
+	for _, test := range tests {
+		cipher, err := ciphers.NewKeywordCipher(test.keyword)
+		if err != nil {
+			t.Fatalf(">>>>> FAILED: Expected nil, got %s", err)
+		}
+		if cipher.Encrypt(test.plaintext) != test.ciphertext {
+			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.ciphertext, cipher.Encrypt(test.plaintext))
+		}
+		t.Logf("Expected %s, got %s", test.ciphertext, cipher.Encrypt(test.plaintext))
+		t.Logf("Test %s passed", test.plaintext)
+	}
+}
+
+func TestKeywordCipherDecrypt(t *testing.T) {
+	tests := []struct {
+		keyword    string
+		ciphertext string
+		plaintext  string
+	}{
+		{"zebras", "Siaa zq lkba. VA zoa rfpbluaoar!", "Flee at once. WE are discovered!"},
+		{"grandmother", "mcdd gs JiAd. wD gPD nhQajvdpdn!", "flee at OnCe. wE aRE diScovered!"},
+	}
+	for _, test := range tests {
+		cipher, err := ciphers.NewKeywordCipher(test.keyword)
+		if err != nil {
+			t.Fatalf(">>>>> FAILED: Expected nil, got %s", err)
+		}
 		if cipher.Decrypt(test.ciphertext) != test.plaintext {
 			t.Fatalf(">>>>> FAILED: Expected %s, got %s", test.plaintext, cipher.Decrypt(test.ciphertext))
 		}
