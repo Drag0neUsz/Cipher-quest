@@ -1,7 +1,10 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -31,6 +34,27 @@ func InitialChapterSelectScreenModel() ChapterSelectScreenModel {
 		cursor:    Cursor{chapter: 0, puzzle: 0},
 		nextState: content.SessionStateChapterSelectScreen,
 	}
+}
+
+func (m ChapterSelectScreenModel) SaveProgress() error {
+	wd, _ := os.Getwd()
+	saveGame := content.SaveGame{}
+Tag:
+	for _, chapter := range m.chapters {
+		for _, puzzle := range chapter.Puzzles {
+			if puzzle.IsCompleted {
+				saveGame.CompletedIDs = append(saveGame.CompletedIDs, puzzle.ID)
+			} else {
+				break Tag
+			}
+		}
+	}
+	marshalled, err := json.Marshal(saveGame)
+	if err != nil {
+		return err
+	}
+	os.WriteFile(filepath.Join(wd, "internal", "data", "save.json"), marshalled, 0644)
+	return nil
 }
 
 func (m *ChapterSelectScreenModel) GetNextState() content.SessionState {

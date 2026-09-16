@@ -1,5 +1,12 @@
 package content
 
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
 type Chapter struct {
 	Puzzles []*Puzzle
 	Title   string
@@ -22,21 +29,19 @@ type Puzzle struct {
 	UnlocksIDs            []string
 }
 
+type SaveGame struct {
+	CompletedIDs []string `json:"completed_ids"`
+}
+
 var Chapters = generateChapters()
 
 func generateChapters() []Chapter {
-	keywordCipher, err := NewKeywordCipher("julius")
-	if err != nil {
-		panic(err)
-	}
-	return []Chapter{
+	keyword, _ := NewKeywordCipher("JULIUS")
+	defaultSave := []Chapter{
 		{Title: "Chapter 1 Substitution Ciphers", Puzzles: []*Puzzle{
 			{ID: "caesar", Title: "Caesar Cipher", IsCompleted: false, IsLocked: false, Cipher: CaesarCipher{Shift: 3}, Content: pickIntercepts(CaesarCipher{Shift: 3}, caesarIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"atbash"}},
 			{ID: "atbash", Title: "Atbash Cipher", IsCompleted: false, IsLocked: true, Cipher: AtbashCipher{}, Content: pickIntercepts(AtbashCipher{}, atbashIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"keyword"}},
-			// scripts: keywordIntercepts; expected: KeywordCipher, key JULIUS
-			{ID: "keyword", Title: "Keyword Cipher", IsCompleted: false, IsLocked: true, Cipher: keywordCipher, Content: pickIntercepts(keywordCipher, keywordIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"affine"}},
-			// scripts: affineIntercepts; expected: AffineCipher, keys 5, 8
-			{ID: "affine", Title: "Affine Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1, UnlocksIDs: []string{"scytale"}},
+			{ID: "keyword", Title: "Keyword Cipher", IsCompleted: false, IsLocked: true, Cipher: keyword, Content: pickIntercepts(keyword, keywordIntercepts), CompletedContentIndex: -1, UnlocksIDs: []string{"scytale"}},
 		}},
 		{Title: "Chapter 2 Transposition Ciphers", Puzzles: []*Puzzle{
 			// scripts: scytaleIntercepts; expected: ScytaleCipher, staff width
@@ -69,4 +74,32 @@ func generateChapters() []Chapter {
 			{ID: "vernam", Title: "Vernam Cipher", IsCompleted: false, IsLocked: true, Content: []content{}, CompletedContentIndex: -1},
 		}},
 	}
+
+	wd, _ := os.Getwd()
+	save, err := os.ReadFile(filepath.Join(wd, "internal", "data", "save.json"))
+	if err != nil {
+		return defaultSave
+	}
+	saveGame := SaveGame{}
+	json.Unmarshal(save, &saveGame)
+	i := 0
+Tag:
+	for _, chapter := range defaultSave {
+		for _, p := range chapter.Puzzles {
+			//based on the fact that the game is linear and all puzzles are unlocked in order, we can just check if the index is the same as the number of completed puzzles
+			if i == len(saveGame.CompletedIDs) {
+				fmt.Println(p.ID)
+				p.IsLocked = false
+				break Tag
+			}
+			if saveGame.CompletedIDs[i] == p.ID {
+				p.IsCompleted = true
+				p.CompletedContentIndex = len(p.Content) - 1
+				p.IsLocked = false
+				i++
+				fmt.Println(p.ID)
+			}
+		}
+	}
+	return defaultSave
 }

@@ -138,7 +138,6 @@ var atbashIntercepts = []interceptStage{
 	},
 }
 
-// scripts: keywordIntercepts; expected: KeywordCipher, key JULIUS
 var keywordIntercepts = []interceptStage{
 	{
 		tag: "INTERCEPTED TRANSMISSION",
@@ -199,70 +198,6 @@ var keywordIntercepts = []interceptStage{
 				solution:            "CLOACA",
 				completionQuote:     "The sewer. I am not paid enough for this sentence.",
 				completionNarration: "Butts says if Caesar wants the Cloaca Maxima, he can have it.",
-			},
-		},
-	},
-}
-
-// scripts: affineIntercepts; expected: AffineCipher, keys 5, 8
-var affineIntercepts = []interceptStage{
-	{
-		tag: "INTERCEPTED TRANSMISSION",
-		intro: []string{
-			"Last packet of the night, smartpants. Try to look honored.",
-			"",
-			"Caesar got tired of one lucky number. The scribes are calling this",
-			"one 'the proper math' — he picked " + quoteAccent("two", " lucky numbers this time."),
-			"If the tenth moves on the hour in this dispatch, the city needs it yesterday.",
-		},
-		prompt: "Crack the pair and give us the hour.",
-		payloads: []choice{
-			{
-				message:             "We move at the %s hour.",
-				solution:            "TENTH",
-				completionQuote:     "The tenth hour. Dramatic, and inconvenient for dinner.",
-				completionNarration: "A sealed addendum just arrived. Of course it did.",
-			},
-			{
-				message:             "Torches out after the %s.",
-				solution:            "VIGIL",
-				completionQuote:     "After the vigil. They want the city asleep and the guards bored.",
-				completionNarration: "Butts says the night watch just became everyone's problem.",
-			},
-			{
-				message:             "Strike during the %s.",
-				solution:            "IDES",
-				completionQuote:     "The Ides. Even Caesar's calendar has a sense of humor.",
-				completionNarration: "Hold on — the launch order is in the next packet.",
-			},
-		},
-	},
-	{
-		tag:      "FOLLOW-UP INTERCEPT",
-		preamble: "*The courier is still out of breath. The wax is still warm.*\n",
-		intro: []string{
-			"This is the one. Same two-number party trick.",
-			"If you decode it, we know when he stops pretending this is a drill.",
-		},
-		prompt: "Read the launch order. Then go home. Or don't. Butts won't.",
-		payloads: []choice{
-			{
-				message:             "We cross the %s at dawn. Tell no one.",
-				solution:            "RUBICON",
-				completionQuote:     "The Rubicon. Once you cross it, there is no going back.\nNice work, smartpants.",
-				completionNarration: "The city can be warned before the first boot hits the water.",
-			},
-			{
-				message:             "The die is %s.",
-				solution:            "CAST",
-				completionQuote:     "Alea iacta est. He really said it. Show-off.",
-				completionNarration: "Butts wants the river watched and the bridges unhelpful.",
-			},
-			{
-				message:             "Burn the bridge at %s.",
-				solution:            "ARIMINUM",
-				completionQuote:     "Ariminum. After the crossing, he doesn't want a way home.",
-				completionNarration: "If the bridge burns, we can still be the ones holding the matches.",
 			},
 		},
 	},

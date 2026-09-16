@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"charm.land/bubbles/v2/viewport"
@@ -28,7 +29,7 @@ func getInstructionsPages() []string {
 		fmt.Printf("error gettingwd: %s", err)
 		return []string{""}
 	}
-	file, err := os.ReadFile(wd + "/internal/content/instructions.md")
+	file, err := os.ReadFile(filepath.Join(wd, "internal", "content", "instructions.md"))
 	if err != nil {
 		fmt.Printf("error opening: %s", err)
 		return []string{""}

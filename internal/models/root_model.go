@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	tea "charm.land/bubbletea/v2"
 	"github.com/Drag0neUsz/Cipher-quest/internal/content"
 )
@@ -33,6 +35,9 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.String() == "ctrl+c" {
+			if err := m.chapterSelectScreen.SaveProgress(); err != nil {
+				fmt.Println(err)
+			}
 			return m, tea.Quit
 		}
 	}
